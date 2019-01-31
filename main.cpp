@@ -32,7 +32,7 @@ void importUsers(vector<UserInfo>&);
 int returnUserId(vector<UserInfo>&);
 int loginForm(vector<UserInfo>&);
 int LogOut(int id);
-int registeredMenu(vector<UserInfo>&,int id);
+int registeredUserMenu(vector<UserInfo>&,int id);
 ContactInfo uploadContacts(string txtLine);
 void importUserContacts(vector<ContactInfo>&, int id);
 void importAllContacts(vector<ContactInfo>&);
@@ -41,7 +41,7 @@ int addNewContact(vector<ContactInfo>&contacts,int userId, int contactsNr);
 void displayAllContacts(vector<ContactInfo>&);
 void findName(vector<ContactInfo>&);
 void findSurname(vector<ContactInfo>&);
-/********************************************************/
+/************ Working Space :) ***********************/
 
 /************************************************************/
 int main(){
@@ -70,7 +70,7 @@ int main(){
                 default: cout<<"Sorry wrong choice. Try again(0-2)"; Sleep(2000);
             }
         }else{
-            LogedIn=registeredMenu(users, registeredId);
+            LogedIn=registeredUserMenu(users, registeredId);
             if(LogedIn==0)registeredId=0;
         }
     }
@@ -111,7 +111,7 @@ string editTxt(){
 }
 
 UserInfo uploadUser(string txtLine){
-    UserInfo user;
+    UserInfo tmpUser;
     string singleWord="";
     int dataNr=1;
         for(int i=0; i<txtLine.length(); i++){
@@ -120,43 +120,43 @@ UserInfo uploadUser(string txtLine){
             }else{
             switch(dataNr){
             case 1:
-                user.UserId=atoi(singleWord.c_str());
+                tmpUser.UserId=atoi(singleWord.c_str());
                 break;
             case 2:
-                user.nick=singleWord;
+                tmpUser.nick=singleWord;
                 break;
             case 3:
-                user.password=singleWord;
+                tmpUser.password=singleWord;
                 break;
             }
             singleWord="";
             dataNr++;
             }
         }
-    return user;
+    return tmpUser;
 }
 
 void importUsers(vector<UserInfo>&users){
-    UserInfo user;
+    UserInfo tmpUser;
     string txt="";
     fstream file;
     file.open("Users.txt", ios::in);
     if(file.good()==true){
         while(getline(file,txt)){
-            user=uploadUser(txt);
-            users.push_back(user);
+            tmpUser=uploadUser(txt);
+            users.push_back(tmpUser);
         }
         file.close();
     }
 }
 
 int returnUserId(vector<UserInfo>&users){
-    UserInfo user;
+    UserInfo tmpUser;
     int id;
     if(users.empty()==true) id=0;
     else{
-        user.UserId=users.back().UserId;
-        id=user.UserId;
+        tmpUser.UserId=users.back().UserId;
+        id=tmpUser.UserId;
     }
     return id;
 }
@@ -233,7 +233,7 @@ int loginForm(vector<UserInfo>&users){
 }
 
 
-int registeredMenu(vector<UserInfo>&users,int id){
+int registeredUserMenu(vector<UserInfo>&users,int id){
     vector<ContactInfo>contacts;
     int choice;
     int contactsNr=returnLastContactId();
@@ -353,27 +353,27 @@ int returnLastContactId(){
 }
 
 int addNewContact(vector<ContactInfo>&contacts,int userId, int contactsNr){
-        ContactInfo contact;
-        contact.ContactId=contactsNr+1;
-        contact.UserId=userId;
+        ContactInfo tmpContact;
+        tmpContact.ContactId=contactsNr+1;
+        tmpContact.UserId=userId;
         cout << "Enter Name: ";
-        contact.name = editTxt();
+        tmpContact.name = editTxt();
         cout << "Enter Surname: ";
-        contact.surname = editTxt();
+        tmpContact.surname = editTxt();
         cout << "Phone Nr: ";
-        contact.tel = editTxt();
+        tmpContact.tel = editTxt();
         cout << "Email: ";
-        contact.email = editTxt();
+        tmpContact.email = editTxt();
         cout << "Address: ";
-        contact.address = editTxt();
+        tmpContact.address = editTxt();
 
     fstream file;
     file.open("ContactsBook.txt",ios::out | ios::app);
 
     if (file.good() == true){
-        file<<contact.ContactId<<"|"<<contact.UserId<<"|"<<contact.name<<"|"
-            <<contact.surname<<"|"<<contact.tel
-            <<"|"<<contact.email<<"|"<<contact.address <<"|"<< endl;
+        file<<tmpContact.ContactId<<"|"<<tmpContact.UserId<<"|"<<tmpContact.name<<"|"
+            <<tmpContact.surname<<"|"<<tmpContact.tel
+            <<"|"<<tmpContact.email<<"|"<<tmpContact.address <<"|"<< endl;
         file.close();
     }else{
         cout << "ERROR: Contact not saved." << endl;
@@ -399,7 +399,7 @@ void displayAllContacts(vector<ContactInfo>& contacts){
 
 void findName(vector<ContactInfo>& contacts){
     string tmpName;
-    int tmp_nr=0, vectorSize;
+    int tmp_nr=0;
     cout<<"Enter Name: ";
     tmpName=editTxt();
     if(!contacts.empty()){
@@ -422,7 +422,7 @@ void findName(vector<ContactInfo>& contacts){
 
 void findSurname(vector<ContactInfo>& contacts){
     string tmpSurname;
-    int tmp_nr=0, vectorSize;
+    int tmp_nr=0;
     cout<<"Enter Surname: ";
     tmpSurname=editTxt();
     if(!contacts.empty()){
