@@ -3,11 +3,14 @@
 - menu logowania;
 - jesli zalogowany, wyswietl menu zalogowanego,
 - pobierz kontakty uzytkownika zalogowanego,
+- wyswietl wszystkie kontakty uz zal,
+- szukaj po imieniu,
+- szukaj po nazwisku,
+- zmiana hasla,
 */
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <conio.h>
 #include <windows.h>
 #include <algorithm>
 #include <vector>
@@ -41,7 +44,12 @@ int addNewContact(vector<ContactInfo>&contacts,int userId, int contactsNr);
 void displayAllContacts(vector<ContactInfo>&);
 void findName(vector<ContactInfo>&);
 void findSurname(vector<ContactInfo>&);
+void exportUsersVectorToFile(vector<UserInfo>&);
+void resetPassword(vector<UserInfo>&, int id);
 /************ Working Space :) ***********************/
+
+
+
 
 /************************************************************/
 int main(){
@@ -62,10 +70,6 @@ int main(){
                     usersNr=registerForm(users, usersNr);
                     importUsers(users);
                     break;
-                }case 3:{
-                    cout<<"ilosc uz: "<<returnUserId(users);
-                    getchar();getchar();
-                    break;
                 }case 0: exit(0);break;
                 default: cout<<"Sorry wrong choice. Try again(0-2)"; Sleep(2000);
             }
@@ -78,12 +82,12 @@ int main(){
 }
 /*********************************************************************/
 void LoginMenu(){
+    int choice;
         system("cls");
         cout << "\t\tMENU" << endl;
         cout << "====================================" << endl;
         cout << "1. LOGIN." << endl;
         cout << "2. Register." << endl;
-        cout << "3.Test." << endl;
         cout << "0. Exit." << endl;
         cout << "====================================" << endl;
         cout << "Your choice: ";
@@ -253,6 +257,7 @@ int registeredUserMenu(vector<UserInfo>&users,int id){
         cout << "4. Display all contacts." << endl;
         cout << "5. Remove contact." << endl;
         cout << "6. Edit contact." << endl;
+        cout << "7. Reset password." << endl;
         cout << "0. Log out." << endl;
         cout << "====================================" << endl;
         cout << "Your choice: ";
@@ -274,7 +279,10 @@ int registeredUserMenu(vector<UserInfo>&users,int id){
                  //removeContact(contacts);
                 break;
             }case 6:{
-                //editContact(contacts);
+               // editContact(contacts,id);
+                break;
+            }case 7:{
+                resetPassword(users,id);
                 break;
             }case 0: id=0;
                 break;
@@ -441,6 +449,46 @@ void findSurname(vector<ContactInfo>& contacts){
     if(tmp_nr==0) cout<<"No contact has been found.";
         tmp_nr=0;
     getchar();
+}
+
+void exportUsersVectorToFile(vector<UserInfo>&users){
+    fstream file;
+    file.open("Users.txt",ios::out);
+
+    if (file.good() == true){
+        for(vector<UserInfo>::iterator itr=users.begin(); itr!=users.end(); itr++){
+        file<<itr->UserId<<"|"<<itr->nick<<"|"<<itr->password<<"|"<<endl;
+        }
+        file.close();
+    }else{
+        cout << "ERROR: Contact not saved." << endl;
+        system("pause");
+    }
+}
+
+void resetPassword(vector<UserInfo>&users, int id){
+    string oldPass, newPass1, newPass2;
+
+    for(vector<UserInfo>::iterator itr=users.begin(); itr!=users.end(); itr++){
+        if(id==itr->UserId){
+            cout<<"Please enter your old password: ";
+            cin>>oldPass;
+             if(oldPass==itr->password){
+                cout<<"Please enter new password:";cin>>newPass1;
+                cout<<"Please confirm new password:";cin>>newPass2;
+                    if(newPass1==newPass2){
+                       itr->password=newPass1;
+                       cout<<"Your password has been changed.\n";
+                       exportUsersVectorToFile(users);
+                       Sleep(2000);
+                    }else{
+                        cout<<"Sorry your new passwords does not match."; Sleep(2000);
+                    }
+            }else{
+                cout<<"Sorry your passwords does not match."; Sleep(2000);
+            }
+        }
+    }
 }
 
 
