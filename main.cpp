@@ -37,8 +37,8 @@ int loginForm(vector<UserInfo>&);
 int LogOut(int id);
 int registeredUserMenu(vector<UserInfo>&,int id);
 ContactInfo uploadContacts(string txtLine);
+ContactInfo uploadSingleContact(vector<ContactInfo>&contacts, int contactId);
 void importUserContacts(vector<ContactInfo>&, int id);
-void importAllContacts(vector<ContactInfo>&);
 int returnLastContactId();
 int addNewContact(vector<ContactInfo>&contacts,int userId, int contactsNr);
 void displayAllContacts(vector<ContactInfo>&);
@@ -46,9 +46,10 @@ void findName(vector<ContactInfo>&);
 void findSurname(vector<ContactInfo>&);
 void exportUsersVectorToFile(vector<UserInfo>&);
 void resetPassword(vector<UserInfo>&, int id);
+void editContact(vector<ContactInfo>&contacts);
+void saveEditedContact(ContactInfo contact);
+void saveChanges(vector<ContactInfo>&, int id);
 /************ Working Space :) ***********************/
-
-
 
 
 /************************************************************/
@@ -184,10 +185,8 @@ int registerForm(vector<UserInfo>&users, int idNr){
         cout<<"Enter Password: ";
         cin>>tmpUser.password;
         tmpUser.UserId=idNr+1;
-
         fstream file;
         file.open("Users.txt",ios::out | ios::app);
-
         if (file.good() == true){
             file<<tmpUser.UserId<<"|"<<tmpUser.nick<<"|"<<tmpUser.password<<"|"<<endl;
             file.close();
@@ -264,35 +263,35 @@ int registeredUserMenu(vector<UserInfo>&users,int id){
         choice=verifyChar();
         switch(choice){
             case 1:{
-                    contactsNr=addNewContact(contacts,id,contactsNr);
+                contactsNr=addNewContact(contacts,id,contactsNr);
                 break;
             }case 2:{
-                    findName(contacts);
+                findName(contacts);
                 break;
             }case 3:{
-                    findSurname(contacts);
+                findSurname(contacts);
                 break;
             }case 4:{
-                    displayAllContacts(contacts);
+                displayAllContacts(contacts);
                 break;
             }case 5:{
                  //removeContact(contacts);
                 break;
             }case 6:{
-               // editContact(contacts,id);
+                editContact(contacts);
                 break;
             }case 7:{
                 resetPassword(users,id);
                 break;
             }case 0: id=0;
                 break;
-            default: cout<<"Sorry wrong choice. Try again(0-6)"; Sleep(2000);
+            default: cout<<"Sorry wrong choice. Try again(0-7)"; Sleep(2000);
          }
          return id;
 }
 
 ContactInfo uploadContacts(string txtLine){
-     ContactInfo tmpContact;
+    ContactInfo tmpContact;
     string singleWord="";
     int dataNr=1;
         for(int i=0; i<txtLine.length(); i++){
@@ -329,6 +328,22 @@ ContactInfo uploadContacts(string txtLine){
     return tmpContact;
 }
 
+ContactInfo uploadSingleContact(vector<ContactInfo>&contacts, int contactId){
+    ContactInfo tmpContact;
+        for(vector<ContactInfo>::iterator itr=contacts.begin(); itr!=contacts.end(); itr ++){
+            if(contactId==itr->ContactId){
+                tmpContact.ContactId=itr->ContactId;
+                tmpContact.UserId=itr->UserId;
+                tmpContact.name=itr->name;
+                tmpContact.surname=itr->surname;
+                tmpContact.tel=itr->tel;
+                tmpContact.address=itr->address;
+                tmpContact.email=itr->email;
+            }
+        }
+    return tmpContact;
+}
+
 void importUserContacts(vector<ContactInfo>&contacts, int id){
     ContactInfo tmpContact;
      string txt="";
@@ -343,6 +358,7 @@ void importUserContacts(vector<ContactInfo>&contacts, int id){
         file.close();
     }
 }
+
 
 int returnLastContactId(){
     ContactInfo tmpContact;
@@ -482,13 +498,117 @@ void resetPassword(vector<UserInfo>&users, int id){
                        exportUsersVectorToFile(users);
                        Sleep(2000);
                     }else{
-                        cout<<"Sorry your new passwords does not match."; Sleep(2000);
+                        cout<<"Sorry your new passwords do not match."; Sleep(2000);
                     }
             }else{
-                cout<<"Sorry your passwords does not match."; Sleep(2000);
+                cout<<"Sorry your passwords do not match."; Sleep(2000);
             }
         }
     }
 }
+
+void editContact(vector<ContactInfo>&contacts){
+    int tmpId,choice;
+    string txt;
+    bool found=false;
+
+    cout<<"Enter contact Id you wish to edit: ";
+    cin>>tmpId;
+    for(vector<ContactInfo>::iterator itr=contacts.begin(); itr!=contacts.end(); itr++){
+        if(tmpId==itr->ContactId){
+            found=true;
+            cout<<"\nYou are going to edit contact with id: "<<itr->ContactId<<endl;
+                cout<<"Name: "<<itr->name<<" Surname: "<<itr->surname<<endl<<endl;
+                cout<<"Which data are you going to change?"<<endl;
+                cout<<"1. Name."<<endl;
+                cout<<"2. Surname."<<endl;
+                cout<<"3. Phone."<<endl;
+                cout<<"4. Email."<<endl;
+                cout<<"5. Address."<<endl;
+                cout<<"0. Return to user Menu."<<endl;
+                cout<<"================="<<endl;
+                cout<<"Choice: ";
+                choice=verifyChar();
+                switch(choice){
+                    case 1:{
+                        cout<<"Tape in new Name: ";
+                        txt=editTxt();
+                        itr->name=txt;
+                        saveChanges(contacts,tmpId);
+                        break;
+                    }case 2:{
+                        cout<<"Tape in new Surname: ";
+                        txt=editTxt();
+                        itr->surname=txt;
+                        saveChanges(contacts,tmpId);
+                        break;
+                    }case 3:{
+                        cout<<"Tape in new Phone number: ";
+                        txt=editTxt();
+                        itr->tel=txt;
+                        saveChanges(contacts,tmpId);
+                        break;
+                    }case 4:{
+                        cout<<"Tape in new Email: ";
+                        txt=editTxt();
+                        itr->email=txt;
+                        saveChanges(contacts,tmpId);
+                        break;
+                    }case 5:{
+                        cout<<"Tape in new Address: ";
+                        txt=editTxt();
+                        itr->address=txt;
+                        saveChanges(contacts,tmpId);
+                        break;
+                    }case 0:break;
+                    default: cout<<"Sorry wrong choice. Try again(0-5)"<<endl;Sleep(2000);
+                }
+        }
+    }
+    if (found==false){
+        cout<<"Sorry contact with id: "<<tmpId<<" not found."<<endl;
+        Sleep(2000);
+    }
+}
+
+void saveEditedContact(ContactInfo contact){
+    fstream file;
+    file.open("tmpContacts.txt",ios::out|ios::app);
+    if (file.good() == true){
+        file<<contact.ContactId<<"|"<<contact.UserId<<"|"<<contact.name<<"|"
+        <<contact.surname<<"|"<<contact.tel<<"|"<<contact.email<<"|"<<contact.address<<"|"<< endl;
+        file.close();
+    }else{
+        cout << "ERROR: Contact not saved." << endl;
+        system("pause");
+    }
+}
+
+void saveChanges(vector<ContactInfo>&contacts, int id){
+    fstream file;
+    string txt;
+    ContactInfo singleContact=uploadSingleContact(contacts, id);
+    ContactInfo txtContact;
+
+    file.open("ContactsBook.txt",ios::in);
+    if (file.good() == true){
+        while(getline(file,txt)){
+            txtContact=uploadContacts(txt);
+            if(id==txtContact.ContactId){
+                saveEditedContact(singleContact);
+            }else{
+                saveEditedContact(txtContact);
+            }
+        }
+        file.close();
+        remove("ContactsBook.txt");
+        rename("tmpContacts.txt","ContactsBook.txt");
+        cout<<"\nChanges saved!!!"<<endl; Sleep(2000);
+    }else{
+        cout << "ERROR: Contact not saved." << endl;
+        system("pause");
+    }
+}
+
 
 
