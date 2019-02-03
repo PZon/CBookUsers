@@ -7,6 +7,10 @@
 - szukaj po imieniu,
 - szukaj po nazwisku,
 - zmiana hasla,
+- edycja kontaktow
+    - zapis do pliku tymczasowego
+- usuwanie kontaktu
+    - zapis do plik tymczasowego
 */
 #include <iostream>
 #include <fstream>
@@ -37,7 +41,7 @@ int loginForm(vector<UserInfo>&);
 int LogOut(int id);
 int registeredUserMenu(vector<UserInfo>&,int id);
 ContactInfo uploadContacts(string txtLine);
-ContactInfo uploadSingleContact(vector<ContactInfo>&contacts, int contactId);
+ContactInfo uploadSingleContact(vector<ContactInfo>&, int contactId);
 void importUserContacts(vector<ContactInfo>&, int id);
 int returnLastContactId();
 int addNewContact(vector<ContactInfo>&contacts,int userId, int contactsNr);
@@ -46,9 +50,11 @@ void findName(vector<ContactInfo>&);
 void findSurname(vector<ContactInfo>&);
 void exportUsersVectorToFile(vector<UserInfo>&);
 void resetPassword(vector<UserInfo>&, int id);
-void editContact(vector<ContactInfo>&contacts);
-void saveEditedContact(ContactInfo contact);
-void saveChanges(vector<ContactInfo>&, int id);
+void saveContactsToTmpFile(ContactInfo /*contact*/);
+void editContact(vector<ContactInfo>&);
+void saveEditedChanges(vector<ContactInfo>&, int contactId);
+void removeContact(vector<ContactInfo>&);
+void saveDeletChanges(vector<ContactInfo>&,int contactId);
 /************ Working Space :) ***********************/
 
 
@@ -87,9 +93,9 @@ void LoginMenu(){
         system("cls");
         cout << "\t\tMENU" << endl;
         cout << "====================================" << endl;
-        cout << "1. LOGIN." << endl;
-        cout << "2. Register." << endl;
-        cout << "0. Exit." << endl;
+        cout << "   1. LOGIN." << endl;
+        cout << "   2. Register." << endl;
+        cout << "   0. Exit." << endl;
         cout << "====================================" << endl;
         cout << "Your choice: ";
 }
@@ -250,16 +256,16 @@ int registeredUserMenu(vector<UserInfo>&users,int id){
     cout<<"HELLO: "<<tmpUser.nick<<endl;
     cout << "\t\tMENU" << endl;
         cout << "====================================" << endl;
-        cout << "1. Add new person." << endl;
-        cout << "2. Find person by name." << endl;
-        cout << "3. Find person by surname." << endl;
-        cout << "4. Display all contacts." << endl;
-        cout << "5. Remove contact." << endl;
-        cout << "6. Edit contact." << endl;
-        cout << "7. Reset password." << endl;
-        cout << "0. Log out." << endl;
+        cout << "   1. Add new person." << endl;
+        cout << "   2. Find person by name." << endl;
+        cout << "   3. Find person by surname." << endl;
+        cout << "   4. Display all contacts." << endl;
+        cout << "   5. Remove contact." << endl;
+        cout << "   6. Edit contact." << endl;
+        cout << "   7. Reset password." << endl;
+        cout << "   0. Log out." << endl;
         cout << "====================================" << endl;
-        cout << "Your choice: ";
+        cout << "   Your choice: ";
         choice=verifyChar();
         switch(choice){
             case 1:{
@@ -275,7 +281,7 @@ int registeredUserMenu(vector<UserInfo>&users,int id){
                 displayAllContacts(contacts);
                 break;
             }case 5:{
-                 //removeContact(contacts);
+                 removeContact(contacts);
                 break;
             }case 6:{
                 editContact(contacts);
@@ -487,11 +493,11 @@ void resetPassword(vector<UserInfo>&users, int id){
 
     for(vector<UserInfo>::iterator itr=users.begin(); itr!=users.end(); itr++){
         if(id==itr->UserId){
-            cout<<"Please enter your old password: ";
+            cout<<"   Please enter your old password: ";
             cin>>oldPass;
              if(oldPass==itr->password){
-                cout<<"Please enter new password:";cin>>newPass1;
-                cout<<"Please confirm new password:";cin>>newPass2;
+                cout<<"   Please enter new password:";cin>>newPass1;
+                cout<<"   Please confirm new password:";cin>>newPass2;
                     if(newPass1==newPass2){
                        itr->password=newPass1;
                        cout<<"Your password has been changed.\n";
@@ -519,46 +525,46 @@ void editContact(vector<ContactInfo>&contacts){
             found=true;
             cout<<"\nYou are going to edit contact with id: "<<itr->ContactId<<endl;
                 cout<<"Name: "<<itr->name<<" Surname: "<<itr->surname<<endl<<endl;
-                cout<<"Which data are you going to change?"<<endl;
-                cout<<"1. Name."<<endl;
-                cout<<"2. Surname."<<endl;
-                cout<<"3. Phone."<<endl;
-                cout<<"4. Email."<<endl;
-                cout<<"5. Address."<<endl;
-                cout<<"0. Return to user Menu."<<endl;
-                cout<<"================="<<endl;
-                cout<<"Choice: ";
+                cout<<"   Which data are you going to change?"<<endl;
+                cout<<"   1. Name."<<endl;
+                cout<<"   2. Surname."<<endl;
+                cout<<"   3. Phone."<<endl;
+                cout<<"   4. Email."<<endl;
+                cout<<"   5. Address."<<endl;
+                cout<<"   0. Return to user Menu."<<endl;
+                cout<<"============================================="<<endl;
+                cout<<"   Choice: ";
                 choice=verifyChar();
                 switch(choice){
                     case 1:{
-                        cout<<"Tape in new Name: ";
+                        cout<<"\tTape in new Name: ";
                         txt=editTxt();
                         itr->name=txt;
-                        saveChanges(contacts,tmpId);
+                        saveEditedChanges(contacts,tmpId);
                         break;
                     }case 2:{
-                        cout<<"Tape in new Surname: ";
+                        cout<<"\tTape in new Surname: ";
                         txt=editTxt();
                         itr->surname=txt;
-                        saveChanges(contacts,tmpId);
+                        saveEditedChanges(contacts,tmpId);
                         break;
                     }case 3:{
-                        cout<<"Tape in new Phone number: ";
+                        cout<<"\tTape in new Phone number: ";
                         txt=editTxt();
                         itr->tel=txt;
-                        saveChanges(contacts,tmpId);
+                        saveEditedChanges(contacts,tmpId);
                         break;
                     }case 4:{
-                        cout<<"Tape in new Email: ";
+                        cout<<"\tTape in new Email: ";
                         txt=editTxt();
                         itr->email=txt;
-                        saveChanges(contacts,tmpId);
+                        saveEditedChanges(contacts,tmpId);
                         break;
                     }case 5:{
-                        cout<<"Tape in new Address: ";
+                        cout<<"\tTape in new Address: ";
                         txt=editTxt();
                         itr->address=txt;
-                        saveChanges(contacts,tmpId);
+                        saveEditedChanges(contacts,tmpId);
                         break;
                     }case 0:break;
                     default: cout<<"Sorry wrong choice. Try again(0-5)"<<endl;Sleep(2000);
@@ -571,7 +577,7 @@ void editContact(vector<ContactInfo>&contacts){
     }
 }
 
-void saveEditedContact(ContactInfo contact){
+void saveContactsToTmpFile(ContactInfo contact){
     fstream file;
     file.open("tmpContacts.txt",ios::out|ios::app);
     if (file.good() == true){
@@ -584,20 +590,20 @@ void saveEditedContact(ContactInfo contact){
     }
 }
 
-void saveChanges(vector<ContactInfo>&contacts, int id){
+void saveEditedChanges(vector<ContactInfo>&contacts, int contactId){
     fstream file;
     string txt;
-    ContactInfo singleContact=uploadSingleContact(contacts, id);
+    ContactInfo singleContact=uploadSingleContact(contacts, contactId);
     ContactInfo txtContact;
 
     file.open("ContactsBook.txt",ios::in);
     if (file.good() == true){
         while(getline(file,txt)){
             txtContact=uploadContacts(txt);
-            if(id==txtContact.ContactId){
-                saveEditedContact(singleContact);
+            if(contactId==txtContact.ContactId){
+                saveContactsToTmpFile(singleContact);
             }else{
-                saveEditedContact(txtContact);
+                saveContactsToTmpFile(txtContact);
             }
         }
         file.close();
@@ -610,5 +616,59 @@ void saveChanges(vector<ContactInfo>&contacts, int id){
     }
 }
 
+void removeContact(vector<ContactInfo>& contacts){
+    int tmpId;
+    string ver;
+    bool found=false;
+    cout<<"Enter contact Id you wish to remove: "; cin>>tmpId;
+    for(vector<ContactInfo>::iterator itr=contacts.begin(); itr!=contacts.end(); itr++){
+        if(tmpId==itr->ContactId){
+            found=true;
+            cout<<"You are going to remove contact id: "<<itr->ContactId<<endl;
+            cout<<" Name: "<<itr->name<<" Surname: "<<itr->surname<<endl;
+            cout<<"\nPlease confirm: enter Y for yes or N for no: ";
+            cin>>ver;
+            transform(ver.begin(), ver.end(),ver.begin(),::toupper);
+                if(ver=="Y"){
+                    contacts.erase(itr);
+                    saveDeletChanges(contacts,tmpId);
+                    cout<<"Contact removed"<<endl;
+                    Sleep(1500);
+                }else if(ver=="N"){
+                    cout<<"You rejected to remove this contact."<<endl;
+                    Sleep(1500);
+                }else {
+                cout<<"Sorry wrong choice."<<endl;
+                Sleep(1500);
+                }
+            }
+    }
+    if(found==false){
+        cout<<"Sorry contact with id: "<<tmpId<<" not found."<<endl;
+         Sleep(2000);
+    }
+}
 
+void saveDeletChanges(vector<ContactInfo>&contacts,int contactId){
+    fstream file;
+    string txt;
+    ContactInfo txtContact;
+    file.open("ContactsBook.txt",ios::in);
+    if (file.good() == true){
+        while(getline(file,txt)){
+            txtContact=uploadContacts(txt);
+            if(contactId==txtContact.ContactId){
+                continue;
+            }else{
+                saveContactsToTmpFile(txtContact);
+            }
+        }
+        file.close();
+        remove("ContactsBook.txt");
+        rename("tmpContacts.txt","ContactsBook.txt");
+    }else{
+        cout << "ERROR: Contacts not saved." << endl;
+        Sleep(2000);
+    }
+}
 
