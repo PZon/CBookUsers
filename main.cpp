@@ -54,11 +54,8 @@ void saveContactsToTmpFile(ContactInfo /*contact*/);
 void editContact(vector<ContactInfo>&);
 void saveEditedChanges(vector<ContactInfo>&, int contactId);
 void removeContact(vector<ContactInfo>&);
-void saveDeletChanges(vector<ContactInfo>&,int contactId);
-/************ Working Space :) ***********************/
-
-
-/************************************************************/
+void saveDeletedChanges(vector<ContactInfo>&,int contactId);
+/*************************************************************/
 int main(){
     vector<UserInfo>users;
     int choice, usersNr,registeredId=0,LogedIn=0;
@@ -71,7 +68,7 @@ int main(){
             switch(choice){
                 case 1:{
                     registeredId=loginForm(users);
-                    LogedIn=1;
+                    if(registeredId>0) LogedIn=1;
                     break;
                 }case 2:{
                     usersNr=registerForm(users, usersNr);
@@ -238,9 +235,9 @@ int loginForm(vector<UserInfo>&users){
        cout<<"Sorry user with "<<tmpUser.nick<<" is not registered.\n";
         Sleep(2000);
     }
-    return 0;
+    return 0
+    ;
 }
-
 
 int registeredUserMenu(vector<UserInfo>&users,int id){
     vector<ContactInfo>contacts;
@@ -281,7 +278,7 @@ int registeredUserMenu(vector<UserInfo>&users,int id){
                 displayAllContacts(contacts);
                 break;
             }case 5:{
-                 removeContact(contacts);
+                removeContact(contacts);
                 break;
             }case 6:{
                 editContact(contacts);
@@ -364,7 +361,6 @@ void importUserContacts(vector<ContactInfo>&contacts, int id){
         file.close();
     }
 }
-
 
 int returnLastContactId(){
     ContactInfo tmpContact;
@@ -617,7 +613,7 @@ void saveEditedChanges(vector<ContactInfo>&contacts, int contactId){
 }
 
 void removeContact(vector<ContactInfo>& contacts){
-    int tmpId;
+    int tmpId=0;
     string ver;
     bool found=false;
     cout<<"Enter contact Id you wish to remove: "; cin>>tmpId;
@@ -631,15 +627,16 @@ void removeContact(vector<ContactInfo>& contacts){
             transform(ver.begin(), ver.end(),ver.begin(),::toupper);
                 if(ver=="Y"){
                     contacts.erase(itr);
-                    saveDeletChanges(contacts,tmpId);
+                    saveDeletedChanges(contacts,tmpId);
                     cout<<"Contact removed"<<endl;
                     Sleep(1500);
+                    break;
                 }else if(ver=="N"){
                     cout<<"You rejected to remove this contact."<<endl;
                     Sleep(1500);
-                }else {
-                cout<<"Sorry wrong choice."<<endl;
-                Sleep(1500);
+                }else{
+                    cout<<"Sorry wrong choice."<<endl;
+                    Sleep(1500);
                 }
             }
     }
@@ -649,7 +646,7 @@ void removeContact(vector<ContactInfo>& contacts){
     }
 }
 
-void saveDeletChanges(vector<ContactInfo>&contacts,int contactId){
+void saveDeletedChanges(vector<ContactInfo>&contacts,int contactId){
     fstream file;
     string txt;
     ContactInfo txtContact;
